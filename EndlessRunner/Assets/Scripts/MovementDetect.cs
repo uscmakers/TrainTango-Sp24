@@ -1,178 +1,217 @@
 using System;
 using System.IO.Ports;
 using UnityEngine;
-
+using UnityEngine.Events;
+using System.Collections.Generic;
 
 public class MovementDetect : MonoBehaviour
 {
-    // Threshold for detecting a jump
-    public float jumpThreshold = 2.0f; // Adjust this value based on your requirements
+    public static MovementDetect instance;
 
-    // Thresholds for detecting left and right motions
-    public float leftThreshold = -0.8f; // Adjust this value based on your requirements
-    public float rightThreshold = 0.8f; // Adjust this value based on your requirements
+    [System.Serializable]
+    public struct ActionThreshold
+    {
+        public Vector3 normDirection;
+        public float magnitudeThreshold;
+        public float dotThreshold;
+        public bool enabled;
+    }
 
-   SerialPort serialPort;
-   public string portName = "COM8"; // Example port name
-   public int baudRate = 115200; // Example baud rate
+    [Header("Action Thresholds")]
+    [SerializeField]
+    public Dictionary<string, ActionThreshold> actionThresholds = new Dictionary<string, ActionThreshold>
+    {
+        { "Jump", new ActionThreshold { normDirection = new Vector3(0, 1, 0), magnitudeThreshold = 1.5f, dotThreshold = 0.8f, enabled = false } },
+        { "Left", new ActionThreshold { normDirection = new Vector3(-1, 0, 0), magnitudeThreshold = 1.5f, dotThreshold = 0.8f, enabled = false } },
+        { "Right", new ActionThreshold { normDirection = new Vector3(1, 0, 0), magnitudeThreshold = 1.5f, dotThreshold = 0.8f, enabled = false } }
+    };
+
+    [Header("Action Callbacks")]
+    [SerializeField]
+    public Dictionary<string, UnityEvent> actionCallbacks = new Dictionary<string, UnityEvent>
+    {
+        { "Jump", new UnityEvent() },
+        { "Left", new UnityEvent() },
+        { "Right", new UnityEvent() }
+    };
+
+    SerialPort serialPort;
+    public string portName = "COM8"; // Example port name
+    public int baudRate = 115200; // Example baud rate
 
     [SerializeField] private PlayerMovement playerMovement;
 
-   public float totalCooldown = 0.5f;
-   private float cooldownTimer = 0f;
+    public float totalCooldown = 0.5f;
+    private float cooldownTimer = 0f;
+
+    public Vector3 acceleration;
+    public Vector3 gyroscope;
+
+    private void Awake()
+    {
+        instance = this;
+
+        foreach (var action in actionCallbacks)
+        {
+            action.Value.AddListener(() => Debug.Log("Action " + action.Key + " triggered"));
+        }
+
+        actionCallbacks["Jump"].AddListener(OnJumpDetected);
+        actionCallbacks["Left"].AddListener(OnLeftMotionDetected);
+        actionCallbacks["Right"].AddListener(OnRightMotionDetected);
+    }
+
+    private void Start()
+    {
+        OpenConnection();
+    }
 
 
-   void Start()
-   {
-       serialPort = new SerialPort(portName, baudRate);
-       serialPort.Open();
-   }
+    private void Update()
+    {
+        string dataString;
+        try
+        {
+            dataString = serialPort.ReadLine();
+        }
+        catch (Exception e)
+        {
+            return;
+        }
+
+        try
+        {
+            if (cooldownTimer >= totalCooldown)
+            {
+                HandleData(dataString);
+            }
+            else
+            {
+                cooldownTimer += Time.deltaTime;
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning("Error reading from serial port: " + e.Message);
+        }
+    }
 
 
-   private void Update()
-   {
-       string dataString = serialPort.ReadLine();
-       //Debug.Log(dataString);
-  
-       try
-       {
-           if (cooldownTimer >= totalCooldown)
-           {
-               HandleData(dataString);
-           }
-           else
-           {
-               cooldownTimer += Time.deltaTime;
-           }
-       }
-       catch (Exception e)
-       {
-           Debug.LogWarning("Error reading from serial port: " + e.Message);
-       }
-   }
+    void OpenConnection()
+    {
+        serialPort = new SerialPort(portName, baudRate)
+        {
+            ReadTimeout = 5000 // Prevents blocking if no data is available to read
+        };
+
+        try
+        {
+            serialPort.Open();
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning("Could not open serial port: " + e.Message);
+        }
+    }
 
 
-   void OpenConnection()
-   {
-       serialPort = new SerialPort(portName, baudRate)
-       {
-           ReadTimeout = 5000 // Prevents blocking if no data is available to read
-       };
+    void HandleData(string dataString)
+    {
+        try
+        {
+            // Assuming the dataString is in the format "A:x,y,z;G:x,y,z;"
+            // We split the data into accelerometer and gyroscope values
+            if (!string.IsNullOrEmpty(dataString) && dataString.Contains("A:") && dataString.Contains("G:"))
+            {
+                string[] splitData = dataString.Split(';');
+                if (splitData.Length >= 2)
+                {
+                    string[] accData = splitData[0].Split(':')[1].Split(',');
+                    string[] gyroData = splitData[1].Split(':')[1].Split(',');
 
 
-       try
-       {
-           serialPort.Open();
-       }
-       catch (Exception e)
-       {
-           Debug.LogError("Could not open serial port: " + e.Message);
-       }
-   }
+                    if (accData.Length == 3 && gyroData.Length == 3)
+                    {
+                        acceleration = new Vector3(
+                            float.Parse(accData[0]),
+                            float.Parse(accData[1]),
+                            float.Parse(accData[2]));
 
 
-   void HandleData(string dataString)
-   {
-       Debug.Log(dataString);
-       try
-       {
-           // Assuming the dataString is in the format "A:x,y,z;G:x,y,z;"
-           // We split the data into accelerometer and gyroscope values
-           if (!string.IsNullOrEmpty(dataString) && dataString.Contains("A:") && dataString.Contains("G:"))
-           {
-               string[] splitData = dataString.Split(';');
-               if (splitData.Length >= 2)
-               {
-                   string[] accData = splitData[0].Split(':')[1].Split(',');
-                   string[] gyroData = splitData[1].Split(':')[1].Split(',');
+                        gyroscope = new Vector3(
+                            float.Parse(gyroData[0]),
+                            float.Parse(gyroData[1]),
+                            float.Parse(gyroData[2]));
 
 
-                   if (accData.Length == 3 && gyroData.Length == 3)
-                   {
-                       Vector3 acceleration = new Vector3(
-                           float.Parse(accData[0]),
-                           float.Parse(accData[1]),
-                           float.Parse(accData[2]));
+                        // Use the parsed data
+                        Debug.Log("Accelerometer data received: " + acceleration);
+                        // Debug.Log("Gyroscope data received: " + gyroscope);
+
+                        foreach (var action in actionThresholds)
+                        {
+                            if (ThresholdCheck(acceleration, action.Value))
+                            {
+                                actionCallbacks[action.Key].Invoke();
+                                cooldownTimer = 0f;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("Error handling data: " + e.Message);
+        }
+    }
+
+    private bool ThresholdCheck(Vector3 acceleration, ActionThreshold threshold)
+    {
+        if (threshold.enabled)
+        {
+            float dot = Vector3.Dot(acceleration.normalized, threshold.normDirection);
+            float magnitude = acceleration.magnitude;
+
+            if (dot > threshold.dotThreshold && magnitude > threshold.magnitudeThreshold)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void OnDestroy()
+    {
+        if (serialPort != null && serialPort.IsOpen)
+        {
+            serialPort.Close();
+        }
+
+        instance = null;
+    }
+
+    void OnJumpDetected()
+    {
+        Debug.LogWarning("Jump detected at " + Time.time);
+        // Add your jump handling code here
+        playerMovement.Jump();
+    }
 
 
-                       Vector3 gyroscope = new Vector3(
-                           float.Parse(gyroData[0]),
-                           float.Parse(gyroData[1]),
-                           float.Parse(gyroData[2]));
+    void OnLeftMotionDetected()
+    {
+        Debug.LogWarning("Left motion detected at " + Time.time);
+        // Add your left motion handling code here
+        playerMovement.MoveLeft();
+    }
 
 
-                       // Use the parsed data
-                       Debug.Log("Accelerometer data received: " + acceleration);
-                       // Debug.Log("Gyroscope data received: " + gyroscope);
-
-
-                       DetectJump(acceleration);
-                       DetectLeftRightMotion(acceleration);
-                   }
-               }
-           }
-       }
-       catch (Exception e)
-       {
-           Debug.LogError("Error handling data: " + e.Message);
-       }
-   }
-
-
-   private void OnDestroy()
-   {
-       if (serialPort != null && serialPort.IsOpen)
-       {
-           serialPort.Close();
-       }
-   }
-
-
-   void DetectJump(Vector3 acceleration)
-   {
-       if (acceleration.z > jumpThreshold)
-       {
-           OnJumpDetected();
-           cooldownTimer = 0;
-       }
-   }
-
-
-   void DetectLeftRightMotion(Vector3 acceleration)
-   {
-       if (acceleration.x < leftThreshold)
-       {
-           OnLeftMotionDetected();
-           cooldownTimer = 0;
-       }
-       else if (acceleration.x > rightThreshold)
-       {
-           OnRightMotionDetected();
-           cooldownTimer = 0;
-       }
-   }
-
-
-   void OnJumpDetected()
-   {
-       Debug.LogWarning("Jump detected at " + Time.time);
-       // Add your jump handling code here
-       playerMovement.Jump();
-   }
-
-
-   void OnLeftMotionDetected()
-   {
-       Debug.LogWarning("Left motion detected at " + Time.time);
-       // Add your left motion handling code here
-       playerMovement.MoveLeft();
-   }
-
-
-   void OnRightMotionDetected()
-   {
-       Debug.LogWarning("Right motion detected at " + Time.time);
-       // Add your right motion handling code here
-       playerMovement.MoveRight();
-   }
+    void OnRightMotionDetected()
+    {
+        Debug.LogWarning("Right motion detected at " + Time.time);
+        // Add your right motion handling code here
+        playerMovement.MoveRight();
+    }
 }

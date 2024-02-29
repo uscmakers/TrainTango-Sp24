@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 public class PlayerMovement : MonoBehaviour
 {
     public GameObject gameOverUI;
-    
+
     bool alive = true;
     public float speed = 5;
     [SerializeField] Rigidbody rb;
@@ -22,7 +22,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] float jumpForce = 400f;
     [SerializeField] LayerMask groundMask;
 
-    private void FixedUpdate() 
+    private void FixedUpdate()
     {
         if (!alive) return;
 
@@ -62,7 +62,7 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    public void Die ()
+    public void Die()
     {
         alive = false;
         // Restart the game
@@ -97,7 +97,7 @@ public class PlayerMovement : MonoBehaviour
             currentLaneX = middleLane;
         }
     }
-    public void Jump ()
+    public void Jump()
     {
         // Check wether we are currently grounded
         float height = GetComponent<Collider>().bounds.size.y;
