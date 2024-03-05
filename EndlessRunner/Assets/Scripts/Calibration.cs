@@ -1,20 +1,22 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class Calibration : MonoBehaviour
 {
-    public bool calibrating = false;
-    public string calibrationInput;
+    public List<string> calibrationInputs = new List<string>();
     private float calibrationTimer = 0f;
-
-    public MovementDetect movementDetect;
 
     private Dictionary<string, List<Vector3>> calibrationData = new Dictionary<string, List<Vector3>>();
 
+    public CalibrationUI calibrationUI;
+
     private void Update()
     {
-        if (!calibrating) return;
+        if (calibrationInputs.Count == 0)
+            return;
+        string calibrationInput = calibrationInputs[0];
 
         if (calibrationTimer > Mathf.Epsilon)
         {
@@ -28,11 +30,18 @@ public class Calibration : MonoBehaviour
                 calibrationData.Add(calibrationInput, new List<Vector3>());
             }
 
-            calibrationData[calibrationInput].Add(movementDetect.acceleration);
+            calibrationData[calibrationInput].Add(MovementDetect.instance.acceleration);
 
             ApplyCalibrationData();
-            calibrating = false;
+            calibrationInputs.RemoveAt(0);
+            if (calibrationInputs.Count == 0)
+                return;
+
+
+            ResetTimer();
         }
+
+        calibrationUI.SetLabelText(calibrationInputs[0], calibrationTimer.ToString("F2"));
     }
 
     private void ApplyCalibrationData()
@@ -46,17 +55,32 @@ public class Calibration : MonoBehaviour
             }
             average /= action.Value.Count;
 
-            MovementDetect.ActionThreshold threshold = movementDetect.actionThresholds[action.Key];
+            MovementDetect.ActionThreshold threshold = MovementDetect.instance.actionThresholds[action.Key];
             threshold.magnitudeThreshold = average.magnitude;
             threshold.normDirection = average.normalized;
-            movementDetect.actionThresholds[action.Key] = threshold;
+            MovementDetect.instance.actionThresholds[action.Key] = threshold;
         }
     }
 
     public void StartCalibration(string input)
     {
-        calibrating = true;
-        calibrationInput = input;
+        calibrationInputs.Add(input);
+        ResetTimer();
+    }
+
+    public void StartCalibrations(List<string> inputs)
+    {
+        calibrationInputs.AddRange(inputs);
+        ResetTimer();
+    }
+
+    public void StopCalibration()
+    {
+        calibrationInputs.Clear();
+    }
+
+    private void ResetTimer()
+    {
         calibrationTimer = 3f;
     }
 }
