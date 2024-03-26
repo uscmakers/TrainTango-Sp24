@@ -21,10 +21,15 @@ public class MovementDetect : MonoBehaviour
     [SerializeField]
     public Dictionary<string, ActionThreshold> actionThresholds = new Dictionary<string, ActionThreshold>
     {
-        { "Jump", new ActionThreshold { normDirection = new Vector3(0, 1, 0), magnitudeThreshold = 1.5f, dotThreshold = 0.8f, enabled = false } },
-        { "Left", new ActionThreshold { normDirection = new Vector3(-1, 0, 0), magnitudeThreshold = 1.5f, dotThreshold = 0.8f, enabled = false } },
-        { "Right", new ActionThreshold { normDirection = new Vector3(1, 0, 0), magnitudeThreshold = 1.5f, dotThreshold = 0.8f, enabled = false } }
+        { "Jump", new ActionThreshold { normDirection = new Vector3(0, 1, 0), magnitudeThreshold = 1.5f, dotThreshold = 0.75f, enabled = false } },
+        { "Left", new ActionThreshold { normDirection = new Vector3(-1, 0, 0), magnitudeThreshold = 1.5f, dotThreshold = 0.75f, enabled = false } },
+        { "Right", new ActionThreshold { normDirection = new Vector3(1, 0, 0), magnitudeThreshold = 1.5f, dotThreshold = 0.75f, enabled = false } }
     };
+
+    private List<Vector3> directionBuffer = new List<Vector3>();
+    public int maxDirectionBuffer = 3;
+    private List<Vector3> magnitudeBuffer = new List<Vector3>();
+    public int maxMagnitudeBuffer = 8;
 
     [Header("Action Callbacks")]
     [SerializeField]
@@ -132,20 +137,37 @@ public class MovementDetect : MonoBehaviour
 
                     if (accData.Length == 3 && gyroData.Length == 3)
                     {
-                        acceleration = new Vector3(
+                        magnitudeBuffer.Add(new Vector3(
                             float.Parse(accData[0]),
                             float.Parse(accData[1]),
-                            float.Parse(accData[2]));
+                            float.Parse(accData[2])));
+                        if (magnitudeBuffer.Count > maxMagnitudeBuffer)
+                            magnitudeBuffer.RemoveAt(0);
 
 
-                        gyroscope = new Vector3(
+                        directionBuffer.Add(new Vector3(
                             float.Parse(gyroData[0]),
                             float.Parse(gyroData[1]),
-                            float.Parse(gyroData[2]));
+                            float.Parse(gyroData[2])));
+                        if (directionBuffer.Count > maxDirectionBuffer)
+                            directionBuffer.RemoveAt(0);
 
+                        acceleration = Vector3.zero;
+                        foreach (var magnitude in magnitudeBuffer)
+                        {
+                            acceleration += magnitude;
+                        }
+                        acceleration /= magnitudeBuffer.Count;
+
+                        gyroscope = Vector3.zero;
+                        foreach (var direction in directionBuffer)
+                        {
+                            gyroscope += direction;
+                        }
+                        gyroscope /= directionBuffer.Count;
 
                         // Use the parsed data
-                        Debug.Log("Accelerometer data received: " + acceleration);
+                        //Debug.Log("Accelerometer data received: " + acceleration);
                         // Debug.Log("Gyroscope data received: " + gyroscope);
 
                         foreach (var action in actionThresholds)

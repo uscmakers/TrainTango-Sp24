@@ -35,10 +35,18 @@ public class Calibration : MonoBehaviour
             ApplyCalibrationData();
             calibrationInputs.RemoveAt(0);
             if (calibrationInputs.Count == 0)
+            {
+                foreach (var action in MovementDetect.instance.actionThresholds)
+                {
+                    Debug.Log(action.Key + " " + action.Value.magnitudeThreshold + " " + action.Value.normDirection);
+                }
+
+                GameManager.gameState = GameManager.GameState.Playing;
                 return;
+            }
 
 
-            ResetTimer();
+            ResetTimer(2f);
         }
 
         calibrationUI.SetLabelText(calibrationInputs[0], calibrationTimer.ToString("F2"));
@@ -58,6 +66,7 @@ public class Calibration : MonoBehaviour
             MovementDetect.ActionThreshold threshold = MovementDetect.instance.actionThresholds[action.Key];
             threshold.magnitudeThreshold = average.magnitude;
             threshold.normDirection = average.normalized;
+            threshold.enabled = true;
             MovementDetect.instance.actionThresholds[action.Key] = threshold;
         }
     }
@@ -79,8 +88,8 @@ public class Calibration : MonoBehaviour
         calibrationInputs.Clear();
     }
 
-    private void ResetTimer()
+    private void ResetTimer(float time = 3f)
     {
-        calibrationTimer = 3f;
+        calibrationTimer = time;
     }
 }

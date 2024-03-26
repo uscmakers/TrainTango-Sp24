@@ -12,12 +12,12 @@ public class Obstacle : MonoBehaviour
         playerMovement = GameObject.FindObjectOfType<PlayerMovement>();
     }
 
-    private void OnCollisionEnter (Collision collision)
+    private void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.name == "Player")
         {
-             // kill the player
-            playerMovement.Die();
+            // kill the player
+            //playerMovement.Die();
 
         }
 
@@ -25,6 +25,6 @@ public class Obstacle : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 }
