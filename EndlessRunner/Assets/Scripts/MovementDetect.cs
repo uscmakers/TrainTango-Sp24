@@ -3,6 +3,8 @@ using System.IO.Ports;
 using UnityEngine;
 using UnityEngine.Events;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+
 
 public class MovementDetect : MonoBehaviour
 {
@@ -41,7 +43,7 @@ public class MovementDetect : MonoBehaviour
     };
 
     SerialPort serialPort;
-    public string portName = "COM8"; // Example port name
+    public string portName = "COM4"; // Example port name
     public int baudRate = 115200; // Example baud rate
 
     [SerializeField] private PlayerMovement playerMovement;
@@ -72,34 +74,60 @@ public class MovementDetect : MonoBehaviour
     }
 
 
-    private void Update()
+    // private void Update()
+    // {
+    //     string dataString;
+    //     try
+    //     {
+    //         dataString = serialPort.ReadLine();
+    //     }
+    //     catch (Exception e)
+    //     {
+    //         return;
+    //     }
+
+    //     try
+    //     {
+    //         if (cooldownTimer >= totalCooldown)
+    //         {
+    //             HandleData(dataString);
+    //         }
+    //         else
+    //         {
+    //             cooldownTimer += Time.deltaTime;
+    //         }
+    //     }
+    //     catch (Exception e)
+    //     {
+    //         Debug.LogWarning("Error reading from serial port: " + e.Message);
+    //     }
+    // }
+
+    private async void Update() // Make Update async
+{
+    // Only attempt to read if the cooldown has elapsed
+    if (cooldownTimer >= totalCooldown && serialPort != null && serialPort.IsOpen && serialPort.BytesToRead > 0)
     {
-        string dataString;
-        try
-        {
-            dataString = serialPort.ReadLine();
-        }
-        catch (Exception e)
-        {
-            return;
-        }
+        cooldownTimer = 0f; // Reset the cooldown immediately to prevent re-entry
 
         try
         {
-            if (cooldownTimer >= totalCooldown)
-            {
-                HandleData(dataString);
-            }
-            else
-            {
-                cooldownTimer += Time.deltaTime;
-            }
+            // Run the blocking call on another thread
+            string dataString = await Task.Run(() => serialPort.ReadLine());
+
+            // Once the data is read, handle it back on the Unity main thread
+            HandleData(dataString);
         }
         catch (Exception e)
         {
             Debug.LogWarning("Error reading from serial port: " + e.Message);
         }
     }
+    else
+    {
+        cooldownTimer += Time.deltaTime;
+    }
+}
 
 
     void OpenConnection()
@@ -218,7 +246,7 @@ public class MovementDetect : MonoBehaviour
     {
         Debug.LogWarning("Jump detected at " + Time.time);
         // Add your jump handling code here
-        playerMovement.Jump();
+        //playerMovement.Jump();
     }
 
 
