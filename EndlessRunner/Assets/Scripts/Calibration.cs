@@ -7,33 +7,54 @@ public class Calibration : MonoBehaviour
 {
     public List<string> calibrationInputs = new List<string>();
     private float calibrationTimer = 0f;
+    public float preCalibrationWindow = 0.25f;
+    public float postCalibrationWindow = 0.1f;
 
     private Dictionary<string, List<Vector3>> calibrationData = new Dictionary<string, List<Vector3>>();
+    private List<Vector3> calibrationAverages = new List<Vector3>();
 
     public CalibrationUI calibrationUI;
+
+    private Vector3 Average(List<Vector3> calibrationAverages)
+    {
+        Vector3 average = Vector3.zero;
+        foreach (var data in calibrationAverages)
+        {
+            average += data;
+        }
+        average /= calibrationAverages.Count;
+        return average;
+    }
 
     private void Update()
     {
         if (calibrationInputs.Count == 0)
             return;
-        string calibrationInput = calibrationInputs[0];
 
-        if (calibrationTimer > Mathf.Epsilon)
+        string calibrationInput = calibrationInputs[0];
+        calibrationTimer -= Time.deltaTime;
+
+        if (calibrationTimer <= preCalibrationWindow)
         {
-            calibrationTimer -= Time.deltaTime;
+            calibrationAverages.Add(MovementDetect.instance.acceleration);
         }
 
-        if (calibrationTimer <= Mathf.Epsilon)
+        if (calibrationTimer <= -postCalibrationWindow)
         {
             if (!calibrationData.ContainsKey(calibrationInput))
             {
                 calibrationData.Add(calibrationInput, new List<Vector3>());
             }
 
-            calibrationData[calibrationInput].Add(MovementDetect.instance.acceleration);
+            // get average of data
+            Vector3 accelerationAverage = Average(calibrationAverages);
+            calibrationData[calibrationInput].Add(accelerationAverage);
+            Debug.Log(calibrationInput + " " + accelerationAverage);
 
             ApplyCalibrationData();
             calibrationInputs.RemoveAt(0);
+            calibrationAverages.Clear();
+
             if (calibrationInputs.Count == 0)
             {
                 foreach (var action in MovementDetect.instance.actionThresholds)
@@ -49,7 +70,9 @@ public class Calibration : MonoBehaviour
             ResetTimer(2f);
         }
 
-        calibrationUI.SetLabelText(calibrationInputs[0], calibrationTimer.ToString("F2"));
+        calibrationUI.SetLabelText(calibrationInputs[0],
+            Mathf.Max(calibrationTimer, 0f).ToString("F2")
+        );
     }
 
     private void ApplyCalibrationData()

@@ -104,30 +104,30 @@ public class MovementDetect : MonoBehaviour
     // }
 
     private async void Update() // Make Update async
-{
-    // Only attempt to read if the cooldown has elapsed
-    if (cooldownTimer >= totalCooldown && serialPort != null && serialPort.IsOpen && serialPort.BytesToRead > 0)
     {
-        cooldownTimer = 0f; // Reset the cooldown immediately to prevent re-entry
-
-        try
+        // Only attempt to read if the cooldown has elapsed
+        if (cooldownTimer >= totalCooldown && serialPort != null && serialPort.IsOpen && serialPort.BytesToRead > 0)
         {
-            // Run the blocking call on another thread
-            string dataString = await Task.Run(() => serialPort.ReadLine());
+            cooldownTimer = 0f; // Reset the cooldown immediately to prevent re-entry
 
-            // Once the data is read, handle it back on the Unity main thread
-            HandleData(dataString);
+            try
+            {
+                // Run the blocking call on another thread
+                string dataString = await Task.Run(() => serialPort.ReadLine());
+
+                // Once the data is read, handle it back on the Unity main thread
+                HandleData(dataString);
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning("Error reading from serial port: " + e.Message);
+            }
         }
-        catch (Exception e)
+        else
         {
-            Debug.LogWarning("Error reading from serial port: " + e.Message);
+            cooldownTimer += Time.deltaTime;
         }
     }
-    else
-    {
-        cooldownTimer += Time.deltaTime;
-    }
-}
 
 
     void OpenConnection()
@@ -244,7 +244,7 @@ public class MovementDetect : MonoBehaviour
 
     void OnJumpDetected()
     {
-        Debug.LogWarning("Jump detected at " + Time.time);
+        Debug.LogWarning("Jump detected at " + Time.time + " with threshold " + actionThresholds["Jump"].magnitudeThreshold + " and direction " + actionThresholds["Jump"].normDirection);
         // Add your jump handling code here
         //playerMovement.Jump();
     }
@@ -252,7 +252,7 @@ public class MovementDetect : MonoBehaviour
 
     void OnLeftMotionDetected()
     {
-        Debug.LogWarning("Left motion detected at " + Time.time);
+        Debug.LogWarning("Left motion detected at " + Time.time + " with threshold " + actionThresholds["Left"].magnitudeThreshold + " and direction " + actionThresholds["Left"].normDirection);
         // Add your left motion handling code here
         playerMovement.MoveLeft();
     }
@@ -260,7 +260,7 @@ public class MovementDetect : MonoBehaviour
 
     void OnRightMotionDetected()
     {
-        Debug.LogWarning("Right motion detected at " + Time.time);
+        Debug.LogWarning("Right motion detected at " + Time.time + " with threshold " + actionThresholds["Right"].magnitudeThreshold + " and direction " + actionThresholds["Right"].normDirection);
         // Add your right motion handling code here
         playerMovement.MoveRight();
     }
