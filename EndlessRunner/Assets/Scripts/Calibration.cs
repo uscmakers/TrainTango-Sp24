@@ -13,6 +13,8 @@ public class Calibration : MonoBehaviour
     private Dictionary<string, List<Vector3>> calibrationData = new Dictionary<string, List<Vector3>>();
     private List<Vector3> calibrationAverages = new List<Vector3>();
 
+    private Vector3 restingAcceleration;
+
     public CalibrationUI calibrationUI;
 
     private Vector3 Average(List<Vector3> calibrationAverages)
@@ -41,17 +43,21 @@ public class Calibration : MonoBehaviour
 
         if (calibrationTimer <= -postCalibrationWindow)
         {
-            if (!calibrationData.ContainsKey(calibrationInput))
-            {
-                calibrationData.Add(calibrationInput, new List<Vector3>());
-            }
-
             // get average of data
             Vector3 accelerationAverage = Average(calibrationAverages);
-            calibrationData[calibrationInput].Add(accelerationAverage);
-            Debug.Log(calibrationInput + " " + accelerationAverage);
 
-            ApplyCalibrationData();
+            if (calibrationInput == "Stay")
+                restingAcceleration = accelerationAverage;
+            else
+            {
+                if (!calibrationData.ContainsKey(calibrationInput))
+                {
+                    calibrationData.Add(calibrationInput, new List<Vector3>());
+                }
+
+                calibrationData[calibrationInput].Add(accelerationAverage);
+                ApplyCalibrationData(calibrationInput);
+            }
             calibrationInputs.RemoveAt(0);
             calibrationAverages.Clear();
 
@@ -66,7 +72,6 @@ public class Calibration : MonoBehaviour
                 return;
             }
 
-
             ResetTimer(2f);
         }
 
@@ -75,23 +80,22 @@ public class Calibration : MonoBehaviour
         );
     }
 
-    private void ApplyCalibrationData()
+    private void ApplyCalibrationData(string input)
     {
-        foreach (var action in calibrationData)
+        var action = calibrationData[input];
+        Vector3 average = Vector3.zero;
+        foreach (var data in action)
         {
-            Vector3 average = Vector3.zero;
-            foreach (var data in action.Value)
-            {
-                average += data;
-            }
-            average /= action.Value.Count;
-
-            MovementDetect.ActionThreshold threshold = MovementDetect.instance.actionThresholds[action.Key];
-            threshold.magnitudeThreshold = average.magnitude;
-            threshold.normDirection = average.normalized;
-            threshold.enabled = true;
-            MovementDetect.instance.actionThresholds[action.Key] = threshold;
+            average += data;
         }
+        average /= action.Count;
+        average -= restingAcceleration;
+
+        MovementDetect.ActionThreshold threshold = MovementDetect.instance.actionThresholds[input];
+        threshold.magnitudeThreshold = average.magnitude;
+        threshold.normDirection = average.normalized;
+        threshold.enabled = true;
+        MovementDetect.instance.actionThresholds[input] = threshold;
     }
 
     public void StartCalibration(string input)

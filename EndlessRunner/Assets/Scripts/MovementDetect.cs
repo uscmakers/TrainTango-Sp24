@@ -53,6 +53,7 @@ public class MovementDetect : MonoBehaviour
 
     public Vector3 acceleration;
     public Vector3 gyroscope;
+    [HideInInspector] public Vector3 restingAcceleration;
 
     private void Awake()
     {
@@ -193,6 +194,7 @@ public class MovementDetect : MonoBehaviour
                             gyroscope += direction;
                         }
                         gyroscope /= directionBuffer.Count;
+                        gyroscope = Vector3.Normalize(gyroscope);
 
                         // Use the parsed data
                         //Debug.Log("Accelerometer data received: " + acceleration);
@@ -220,6 +222,7 @@ public class MovementDetect : MonoBehaviour
     {
         if (threshold.enabled)
         {
+            acceleration -= restingAcceleration;
             float dot = Vector3.Dot(acceleration.normalized, threshold.normDirection);
             float magnitude = acceleration.magnitude;
 

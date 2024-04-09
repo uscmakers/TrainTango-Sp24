@@ -64,7 +64,7 @@ public class GameManager : MonoBehaviour
                 calibration = Instantiate(calibrationPrefab);
                 Calibration calibrationScript = calibration.GetComponent<Calibration>();
                 calibrationScript.calibrationUI = calibrationUI.GetComponent<CalibrationUI>();
-                calibrationScript.StartCalibrations(new List<string> { "Jump", "Left", "Right" });
+                calibrationScript.StartCalibrations(new List<string> { "Stay", "Jump", "Left", "Right" });
                 break;
             case GameState.Playing:
                 spawner = Instantiate(spawnerPrefab);
