@@ -150,7 +150,7 @@ public class MovementDetect : MonoBehaviour
         }
     }
 
-
+    public Vector3 mAcceleration = Vector3.zero;
     void HandleData(string dataString)
     {
         try
@@ -168,13 +168,13 @@ public class MovementDetect : MonoBehaviour
 
                     if (accData.Length == 3 && gyroData.Length == 3)
                     {
-                        Vector3 acceleration = new Vector3(
+                        mAcceleration = new Vector3(
                             float.Parse(accData[0]),
                             float.Parse(accData[1]),
                             float.Parse(accData[2]));
                         // log with full precision
                         // Debug.Log(acceleration.ToString("F6"));
-                        // acceleration /= accelerationScale;
+                        mAcceleration /= accelerationScale;
                         // magnitudeBuffer.Add(new Vector3(
                         //     float.Parse(accData[0]),
                         //     float.Parse(accData[1]),
@@ -204,11 +204,11 @@ public class MovementDetect : MonoBehaviour
                         // gyroscope /= directionBuffer.Count;
 
                         // Use the parsed data
-                        Debug.Log("Accelerometer data received: " + acceleration);
+                        //Debug.Log("Accelerometer data received: " + mAcceleration);
                         // Debug.Log("Gyroscope data received: " + gyroscope);
 
-                        DetectJump(acceleration);
-                        DetectLeftRightMotion(acceleration);
+                        DetectJump(mAcceleration);
+                        DetectLeftRightMotion(mAcceleration);
                         // foreach (var action in actionThresholds)
                         // {
                         //     if (ThresholdCheck(acceleration, action.Value))
