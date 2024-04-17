@@ -50,6 +50,10 @@ public class MovementDetect : MonoBehaviour
 
     public float totalCooldown = 0.5f;
     private float cooldownTimer = 0f;
+    public float accelerationScale = 0.01f;
+    public float jumpThreshold = 2.0f;
+    public float leftThreshold = -0.8f;
+    public float rightThreshold = 0.8f;
 
     public Vector3 acceleration;
     public Vector3 gyroscope;
@@ -109,12 +113,10 @@ public class MovementDetect : MonoBehaviour
         // Only attempt to read if the cooldown has elapsed
         if (cooldownTimer >= totalCooldown && serialPort != null && serialPort.IsOpen && serialPort.BytesToRead > 0)
         {
-            cooldownTimer = 0f; // Reset the cooldown immediately to prevent re-entry
-
             try
             {
                 // Run the blocking call on another thread
-                string dataString = await Task.Run(() => serialPort.ReadLine());
+                string dataString = serialPort.ReadLine();
 
                 // Once the data is read, handle it back on the Unity main thread
                 HandleData(dataString);
@@ -166,12 +168,19 @@ public class MovementDetect : MonoBehaviour
 
                     if (accData.Length == 3 && gyroData.Length == 3)
                     {
-                        magnitudeBuffer.Add(new Vector3(
+                        Vector3 acceleration = new Vector3(
                             float.Parse(accData[0]),
                             float.Parse(accData[1]),
-                            float.Parse(accData[2])));
-                        if (magnitudeBuffer.Count > maxMagnitudeBuffer)
-                            magnitudeBuffer.RemoveAt(0);
+                            float.Parse(accData[2]));
+                        // log with full precision
+                        // Debug.Log(acceleration.ToString("F6"));
+                        // acceleration /= accelerationScale;
+                        // magnitudeBuffer.Add(new Vector3(
+                        //     float.Parse(accData[0]),
+                        //     float.Parse(accData[1]),
+                        //     float.Parse(accData[2])));
+                        // if (magnitudeBuffer.Count > maxMagnitudeBuffer)
+                        //     magnitudeBuffer.RemoveAt(0);
 
 
                         directionBuffer.Add(new Vector3(
@@ -181,33 +190,33 @@ public class MovementDetect : MonoBehaviour
                         if (directionBuffer.Count > maxDirectionBuffer)
                             directionBuffer.RemoveAt(0);
 
-                        acceleration = Vector3.zero;
-                        foreach (var magnitude in magnitudeBuffer)
-                        {
-                            acceleration += magnitude;
-                        }
-                        acceleration /= magnitudeBuffer.Count;
+                        // foreach (var magnitude in magnitudeBuffer)
+                        // {
+                        //     acceleration += magnitude;
+                        // }
+                        // acceleration /= magnitudeBuffer.Count;
 
-                        gyroscope = Vector3.zero;
-                        foreach (var direction in directionBuffer)
-                        {
-                            gyroscope += direction;
-                        }
-                        gyroscope /= directionBuffer.Count;
-                        gyroscope = Vector3.Normalize(gyroscope);
+                        // gyroscope = Vector3.zero;
+                        // foreach (var direction in directionBuffer)
+                        // {
+                        //     gyroscope += direction;
+                        // }
+                        // gyroscope /= directionBuffer.Count;
 
                         // Use the parsed data
-                        //Debug.Log("Accelerometer data received: " + acceleration);
+                        Debug.Log("Accelerometer data received: " + acceleration);
                         // Debug.Log("Gyroscope data received: " + gyroscope);
 
-                        foreach (var action in actionThresholds)
-                        {
-                            if (ThresholdCheck(acceleration, action.Value))
-                            {
-                                actionCallbacks[action.Key].Invoke();
-                                cooldownTimer = 0f;
-                            }
-                        }
+                        DetectJump(acceleration);
+                        DetectLeftRightMotion(acceleration);
+                        // foreach (var action in actionThresholds)
+                        // {
+                        //     if (ThresholdCheck(acceleration, action.Value))
+                        //     {
+                        //         actionCallbacks[action.Key].Invoke();
+                        //         cooldownTimer = 0f;
+                        //     }
+                        // }
                     }
                 }
             }
@@ -245,26 +254,68 @@ public class MovementDetect : MonoBehaviour
         instance = null;
     }
 
+    // void OnJumpDetected()
+    // {
+    //     Debug.LogWarning("Jump detected at " + Time.time + " with threshold " + actionThresholds["Jump"].magnitudeThreshold + " and direction " + actionThresholds["Jump"].normDirection);
+    //     // Add your jump handling code here
+    //     //playerMovement.Jump();
+    // }
+
+
+    // void OnLeftMotionDetected()
+    // {
+    //     Debug.LogWarning("Left motion detected at " + Time.time + " with threshold " + actionThresholds["Left"].magnitudeThreshold + " and direction " + actionThresholds["Left"].normDirection);
+    //     // Add your left motion handling code here
+    //     playerMovement.MoveLeft();
+    // }
+
+
+    // void OnRightMotionDetected()
+    // {
+    //     Debug.LogWarning("Right motion detected at " + Time.time + " with threshold " + actionThresholds["Right"].magnitudeThreshold + " and direction " + actionThresholds["Right"].normDirection);
+    //     // Add your right motion handling code here
+    //     playerMovement.MoveRight();
+    // }
+    void DetectJump(Vector3 acceleration)
+    {
+        if (acceleration.z > jumpThreshold)
+        {
+            Debug.Log("Jump motion " + acceleration);
+            OnJumpDetected();
+            cooldownTimer = 0;
+        }
+    }
+
+    void DetectLeftRightMotion(Vector3 acceleration)
+    {
+        if (acceleration.x < leftThreshold)
+        {
+            Debug.Log("Left motion " + acceleration);
+            OnLeftMotionDetected();
+            cooldownTimer = 0;
+        }
+        else if (acceleration.x > rightThreshold)
+        {
+            Debug.Log("Right motion " + acceleration);
+            OnRightMotionDetected();
+            cooldownTimer = 0;
+        }
+    }
+
     void OnJumpDetected()
     {
-        Debug.LogWarning("Jump detected at " + Time.time + " with threshold " + actionThresholds["Jump"].magnitudeThreshold + " and direction " + actionThresholds["Jump"].normDirection);
-        // Add your jump handling code here
-        //playerMovement.Jump();
+        playerMovement.Jump();
     }
 
 
     void OnLeftMotionDetected()
     {
-        Debug.LogWarning("Left motion detected at " + Time.time + " with threshold " + actionThresholds["Left"].magnitudeThreshold + " and direction " + actionThresholds["Left"].normDirection);
-        // Add your left motion handling code here
         playerMovement.MoveLeft();
     }
 
 
     void OnRightMotionDetected()
     {
-        Debug.LogWarning("Right motion detected at " + Time.time + " with threshold " + actionThresholds["Right"].magnitudeThreshold + " and direction " + actionThresholds["Right"].normDirection);
-        // Add your right motion handling code here
         playerMovement.MoveRight();
     }
 }

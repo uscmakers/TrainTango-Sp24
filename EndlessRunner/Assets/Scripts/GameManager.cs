@@ -17,7 +17,7 @@ public class GameManager : MonoBehaviour
     }
 
     private GameState prevGameState = GameState.None;
-    public static GameState gameState = GameState.Calibration;
+    public static GameState gameState = GameState.Playing;
 
     public GameObject spawnerPrefab;
     private GameObject spawner;

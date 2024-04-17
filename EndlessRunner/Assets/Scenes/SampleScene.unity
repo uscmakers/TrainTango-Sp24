@@ -25254,6 +25254,10 @@ MonoBehaviour:
   baudRate: 115200
   playerMovement: {fileID: 2119972614}
   totalCooldown: 0.5
+  accelerationScale: -100
+  jumpThreshold: 1.4
+  leftThreshold: -0.5
+  rightThreshold: 0.5
   acceleration: {x: 0, y: 0, z: 0}
   gyroscope: {x: 0, y: 0, z: 0}
   restingAcceleration: {x: 0, y: 0, z: 0}
