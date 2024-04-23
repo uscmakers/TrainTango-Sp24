@@ -111,7 +111,8 @@ public class MovementDetect : MonoBehaviour
     private async void Update() // Make Update async
     {
         // Only attempt to read if the cooldown has elapsed
-        if (cooldownTimer >= totalCooldown && serialPort != null && serialPort.IsOpen && serialPort.BytesToRead > 0)
+        //if (cooldownTimer >= totalCooldown && serialPort != null && serialPort./IsOpen && serialPort.BytesToRead > 0)
+        if (serialPort != null && serialPort.IsOpen && serialPort.BytesToRead > 0)
         {
             try
             {
@@ -153,6 +154,7 @@ public class MovementDetect : MonoBehaviour
     public Vector3 mAcceleration = Vector3.zero;
     void HandleData(string dataString)
     {
+        Debug.Log(dataString);
         try
         {
             // Assuming the dataString is in the format "A:x,y,z;G:x,y,z;"
@@ -175,6 +177,7 @@ public class MovementDetect : MonoBehaviour
                         // log with full precision
                         // Debug.Log(acceleration.ToString("F6"));
                         mAcceleration /= accelerationScale;
+                        Debug.Log(mAcceleration);
                         // magnitudeBuffer.Add(new Vector3(
                         //     float.Parse(accData[0]),
                         //     float.Parse(accData[1]),

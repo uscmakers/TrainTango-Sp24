@@ -20,7 +20,7 @@ public class GroundTile : MonoBehaviour
     }
 
 
-    public void SpawnObstacle ()
+    public void SpawnObstacle()
     {
         // Choose a random point to spawn the obstacle
         int obstacleSpawnIndex = Random.Range(2, 5);

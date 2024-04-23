@@ -6452,6 +6452,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 268095491}
+  - component: {fileID: 268095492}
   m_Layer: 0
   m_Name: City
   m_TagString: Untagged
@@ -7374,6 +7375,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &268095492
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 268095490}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa66bdbae411784409559c137eb1e3a2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!4 &268730686 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 400000, guid: 2509cc5763ca17f4598bf61fd585a93e, type: 3}
@@ -22845,7 +22858,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &922528746
 Transform:
   m_ObjectHideFlags: 0
@@ -25228,7 +25241,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxDirectionBuffer: 3
   maxMagnitudeBuffer: 8
-  portName: COM3
+  portName: COM6
   baudRate: 115200
   playerMovement: {fileID: 2119972614}
   totalCooldown: 0.87
@@ -50954,7 +50967,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 112
+  m_Constraints: 116
   m_CollisionDetection: 0
 --- !u!136 &2119972616
 CapsuleCollider:

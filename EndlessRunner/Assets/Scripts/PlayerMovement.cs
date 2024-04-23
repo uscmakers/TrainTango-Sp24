@@ -25,18 +25,18 @@ public class PlayerMovement : MonoBehaviour
     private void FixedUpdate()
     {
         if (!alive) return;
-        if (GameManager.gameState == GameManager.GameState.MainMenu || GameManager.gameState == GameManager.GameState.GameOver) return;
+        if (GameManager.gameState != GameManager.GameState.Playing) return;
 
         // Vector3 forwardMove = transform.forward * speed * Time.fixedDeltaTime;
         // Vector3 horizontalMove = transform.right * horizontalInput * speed * Time.fixedDeltaTime * horizontalMultiplier;
         // rb.MovePosition(rb.position + forwardMove + horizontalMove);
 
-        Vector3 forwardMove = GameManager.gameState == GameManager.GameState.Playing
-            ? transform.forward * speed * Time.fixedDeltaTime
-            : Vector3.zero;
+        Vector3 forwardMove = -transform.forward * speed * Time.fixedDeltaTime;
+        MovingObject.MoveAll(forwardMove);
+
         Vector3 targetPosition = new Vector3(currentLaneX, rb.position.y, rb.position.z);
         Vector3 moveVector = Vector3.MoveTowards(rb.position, targetPosition, speed * Time.fixedDeltaTime);
-        rb.MovePosition(moveVector + forwardMove);
+        rb.MovePosition(moveVector);
     }
 
     // Update is called once per frame
