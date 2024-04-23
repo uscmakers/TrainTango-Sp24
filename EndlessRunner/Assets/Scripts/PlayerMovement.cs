@@ -3,6 +3,8 @@ using UnityEngine.SceneManagement;
 
 public class PlayerMovement : MonoBehaviour
 {
+    public static PlayerMovement instance;
+
     public GameObject gameOverUI;
 
     bool alive = true;
@@ -21,6 +23,16 @@ public class PlayerMovement : MonoBehaviour
 
     [SerializeField] float jumpForce = 400f;
     [SerializeField] LayerMask groundMask;
+
+    private void Awake()
+    {
+        instance = this;
+    }
+
+    private void OnDestroy()
+    {
+        instance = null;
+    }
 
     private void FixedUpdate()
     {
@@ -100,6 +112,12 @@ public class PlayerMovement : MonoBehaviour
             currentLaneX = middleLane;
         }
     }
+
+    public void MoveCenter()
+    {
+        currentLaneX = middleLane;
+    }
+
     public void Jump()
     {
         // Check wether we are currently grounded
