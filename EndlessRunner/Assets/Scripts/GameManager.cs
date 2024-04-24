@@ -97,13 +97,13 @@ public class GameManager : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
-            vrCameras[0].transform.position.x -= 0.001f;
-            vrCameras[1].transform.position.x += 0.001f;
+            vrCameras[0].transform.position = vrCameras[0].transform.position - new Vector3(0.001f, 0, 0);
+            vrCameras[1].transform.position = vrCameras[0].transform.position + new Vector3(0.001f, 0, 0);
         }
         if (Input.GetKeyDown(KeyCode.RightArrow))
         {
-            vrCameras[0].transform.position.x += 0.001f;
-            vrCameras[1].transform.position.x -= 0.001f;
+            vrCameras[0].transform.position = vrCameras[0].transform.position + new Vector3(0.001f, 0, 0);
+            vrCameras[1].transform.position = vrCameras[0].transform.position - new Vector3(0.001f, 0, 0);
         }
     }
 
