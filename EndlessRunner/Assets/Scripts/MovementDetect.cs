@@ -48,7 +48,7 @@ public class MovementDetect : MonoBehaviour
 
     [SerializeField] private PlayerMovement playerMovement;
 
-    public float totalCooldown = 0.5f;
+    public float totalCooldown = 2.5f;
     private float cooldownTimer = 0f;
     public float accelerationScale = 0.01f;
     public float jumpThreshold = 2.0f;
@@ -79,59 +79,58 @@ public class MovementDetect : MonoBehaviour
     }
 
 
-    // private void Update()
-    // {
-    //     string dataString;
-    //     try
-    //     {
-    //         dataString = serialPort.ReadLine();
-    //     }
-    //     catch (Exception e)
-    //     {
-    //         return;
-    //     }
-
-    //     try
-    //     {
-    //         if (cooldownTimer >= totalCooldown)
-    //         {
-    //             HandleData(dataString);
-    //         }
-    //         else
-    //         {
-    //             cooldownTimer += Time.deltaTime;
-    //         }
-    //     }
-    //     catch (Exception e)
-    //     {
-    //         Debug.LogWarning("Error reading from serial port: " + e.Message);
-    //     }
-    // }
-
-    private async void Update() // Make Update async
+    private void Update()
     {
-        // Only attempt to read if the cooldown has elapsed
-        //if (cooldownTimer >= totalCooldown && serialPort != null && serialPort./IsOpen && serialPort.BytesToRead > 0)
-        if (serialPort != null && serialPort.IsOpen && serialPort.BytesToRead > 0)
+        string dataString;
+        try
         {
-            try
-            {
-                // Run the blocking call on another thread
-                string dataString = serialPort.ReadLine();
+            dataString = serialPort.ReadLine();
+        }
+        catch (Exception e)
+        {
+            return;
+        }
 
-                // Once the data is read, handle it back on the Unity main thread
+        try
+        {
+            if (cooldownTimer >= totalCooldown)
+            {
                 HandleData(dataString);
             }
-            catch (Exception e)
+            else
             {
-                Debug.LogWarning("Error reading from serial port: " + e.Message);
+                cooldownTimer += Time.deltaTime;
             }
         }
-        else
+        catch (Exception e)
         {
-            cooldownTimer += Time.deltaTime;
+            Debug.LogWarning("Error reading from serial port: " + e.Message);
         }
     }
+
+    // private async void Update() // Make Update async
+    // {
+    //     // Only attempt to read if the cooldown has elapsed
+    //     if (cooldownTimer >= totalCooldown && serialPort != null && serialPort.IsOpen && serialPort.BytesToRead > 0)
+    //     {
+    //         try
+    //         {
+    //             // Run the blocking call on another thread
+    //             string dataString = serialPort.ReadLine();
+
+    //             // Once the data is read, handle it back on the Unity main thread
+    //             HandleData(dataString);
+    //         }
+    //         catch (Exception e)
+    //         {
+    //             Debug.LogWarning("Error reading from serial port: " + e.Message);
+    //         }
+    //     }
+    //     else
+    //     {
+    //         cooldownTimer += Time.deltaTime;
+    //     }
+    // }
 
 
     void OpenConnection()
@@ -151,7 +150,9 @@ public class MovementDetect : MonoBehaviour
         }
     }
 
-    public Vector3 mAcceleration = Vector3.zero;
+    // public Vector3 mAcceleration = Vector3.zero;
+    public Vector3 mAcceleration;
+
     void HandleData(string dataString)
     {
         Debug.Log(dataString);
