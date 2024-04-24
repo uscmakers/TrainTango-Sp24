@@ -14,7 +14,6 @@ public class PlayerMovement : MonoBehaviour
 
     public GameObject gameOverUI;
 
-    bool alive = true;
     public float speed = 5;
     [SerializeField] Rigidbody rb;
 
@@ -43,7 +42,6 @@ public class PlayerMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (!alive) return;
         if (GameManager.gameState != GameManager.GameState.Playing) return;
 
         // Vector3 forwardMove = transform.forward * speed * Time.fixedDeltaTime;
@@ -82,15 +80,15 @@ public class PlayerMovement : MonoBehaviour
 
     public void Die()
     {
-        alive = false;
         // Restart the game
         // Invoke("Restart", 2);
         gameOverUI.SetActive(true);
+        GameManager.gameState = GameManager.GameState.GameOver;
     }
 
     public void Restart()
     {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        GameManager.instance.Restart();
     }
 
     public void MoveLeft()

@@ -31,6 +31,8 @@ public class GameManager : MonoBehaviour
     public List<GameObject> hazardPrefabs;
     private float hazardTimer = 0;
     private float totalTime = 0;
+    public float minHazardTime = 2f;
+    public float maxHazardTime = 3.5f;
 
     public List<Camera> vrCameras;
     public List<Camera> nonVrCameras;
@@ -64,6 +66,7 @@ public class GameManager : MonoBehaviour
         {
             switch (gameState)
             {
+                case GameState.GameOver:
                 case GameState.Playing:
                     GameplayUpdate();
                     break;
@@ -80,7 +83,7 @@ public class GameManager : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.R))
         {
-            UnityEngine.SceneManagement.SceneManager.LoadScene(0);
+            Restart();
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha1) || Input.GetKeyDown(KeyCode.Alpha2))
@@ -95,28 +98,37 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        if (Input.GetKeyDown(KeyCode.LeftArrow))
+        if (Input.GetKeyDown(KeyCode.UpArrow))
         {
             vrCameras[0].transform.position = vrCameras[0].transform.position - new Vector3(0.001f, 0, 0);
             vrCameras[1].transform.position = vrCameras[0].transform.position + new Vector3(0.001f, 0, 0);
         }
-        if (Input.GetKeyDown(KeyCode.RightArrow))
+        if (Input.GetKeyDown(KeyCode.DownArrow))
         {
             vrCameras[0].transform.position = vrCameras[0].transform.position + new Vector3(0.001f, 0, 0);
             vrCameras[1].transform.position = vrCameras[0].transform.position - new Vector3(0.001f, 0, 0);
         }
     }
 
+    public void Restart()
+    {
+        gameState = GameState.Playing;
+        UnityEngine.SceneManagement.SceneManager.LoadScene(0);
+    }
+
     private void GameplayUpdate()
     {
         totalTime += Time.deltaTime;
 
-        environmentSpeed = Mathf.Min(maxEnvironmentSpeed, environmentSpeed + Time.deltaTime * 5f);
+        if (gameState == GameState.Playing)
+            environmentSpeed = Mathf.Min(maxEnvironmentSpeed, environmentSpeed + Time.deltaTime * 5f);
+        else if (gameState == GameState.GameOver)
+            environmentSpeed = Mathf.Max(0, environmentSpeed - Time.deltaTime * 5f);
 
         hazardTimer -= Time.deltaTime;
         if (hazardTimer <= 0)
         {
-            hazardTimer = Random.Range(1f, 3f);
+            hazardTimer = Random.Range(minHazardTime, maxHazardTime);
             GameObject hazard = Instantiate(hazardPrefabs[Random.Range(0, hazardPrefabs.Count)]);
             hazard.GetComponent<MovingObject>().SetSide((PlayerMovement.PlayerSide)Random.Range(-1, 2));
         }
@@ -129,7 +141,8 @@ public class GameManager : MonoBehaviour
 
         movingObjects = movingObjects.FindAll((obj) => !obj.shouldDestroy);
 
-        PlayerMovement.instance.GameplayUpdate();
+        if (gameState == GameState.Playing)
+            PlayerMovement.instance.GameplayUpdate();
     }
 
 

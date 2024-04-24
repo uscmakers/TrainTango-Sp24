@@ -40,6 +40,9 @@
     "m_CategoryData": [
         {
             "m_Id": "d7fc9b28e3194ab997431d191994e5cf"
+        },
+        {
+            "m_Id": "53481f7cfc8e40fc9a33921a6352380a"
         }
     ],
     "m_Nodes": [
@@ -1708,6 +1711,45 @@
         "m_SerializableColors": []
     },
     "m_SerializedDescriptor": "SurfaceDescription.Occlusion"
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.CategoryData",
+    "m_ObjectId": "53481f7cfc8e40fc9a33921a6352380a",
+    "m_Name": "",
+    "m_ChildObjectList": [
+        {
+            "m_Id": "95906f923a11ef818c158a0155275925"
+        },
+        {
+            "m_Id": "71194947cf105f89a7f559afd5e0ac63"
+        },
+        {
+            "m_Id": "5d730d47c67f4760946f50aab5210613"
+        },
+        {
+            "m_Id": "1922f656a48e41a1a22164a28a1d0baa"
+        },
+        {
+            "m_Id": "64084679ee4046888dc468e48aa98de9"
+        },
+        {
+            "m_Id": "953609e34b10458caa920de62723a559"
+        },
+        {
+            "m_Id": "316377904aa5435f85c3f2b6f441b663"
+        },
+        {
+            "m_Id": "450abe08e0d74f79939be4f6d8db5afb"
+        },
+        {
+            "m_Id": "10aafde0f8ad45538fe64b0c37a38643"
+        },
+        {
+            "m_Id": "d7f225cd8b634a4b8063d88e97539d42"
+        }
+    ]
 }
 
 {
