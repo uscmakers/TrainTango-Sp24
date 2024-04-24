@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 543191971691489604}
   - component: {fileID: 7483681943812414283}
   - component: {fileID: -8422938411784259884}
+  - component: {fileID: 274018423424316153}
   m_Layer: 0
   m_Name: Obstacle
   m_TagString: Untagged
@@ -27,13 +28,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3256362554249053898}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0.5, z: 0}
   m_LocalScale: {x: 3.3333333, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &6551354517335743480
 MeshFilter:
@@ -118,3 +119,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e810f6b764fa4b4cb0394e1e5ef0001, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &274018423424316153
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3256362554249053898}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa66bdbae411784409559c137eb1e3a2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sidePos: {x: -1, y: 0, z: 1}
+  isOriginal: 1
+  shouldDestroy: 0
+  type: 2

@@ -3,6 +3,13 @@ using UnityEngine.SceneManagement;
 
 public class PlayerMovement : MonoBehaviour
 {
+    public enum PlayerSide
+    {
+        Left = -1,
+        Center = 0,
+        Right = 1
+    }
+
     public static PlayerMovement instance;
 
     public GameObject gameOverUI;
@@ -43,16 +50,12 @@ public class PlayerMovement : MonoBehaviour
         // Vector3 horizontalMove = transform.right * horizontalInput * speed * Time.fixedDeltaTime * horizontalMultiplier;
         // rb.MovePosition(rb.position + forwardMove + horizontalMove);
 
-        Vector3 forwardMove = -transform.forward * speed * Time.fixedDeltaTime;
-        MovingObject.MoveAll(forwardMove);
-
         Vector3 targetPosition = new Vector3(currentLaneX, rb.position.y, rb.position.z);
         Vector3 moveVector = Vector3.MoveTowards(rb.position, targetPosition, speed * Time.fixedDeltaTime);
         rb.MovePosition(moveVector);
     }
 
-    // Update is called once per frame
-    private void Update()
+    public void GameplayUpdate()
     {
         horizontalInput = Input.GetAxis("Horizontal");
 
