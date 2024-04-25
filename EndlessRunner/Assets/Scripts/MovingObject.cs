@@ -41,7 +41,7 @@ public class MovingObject : MonoBehaviour
             {
                 GameObject copy = Instantiate(gameObject);
                 copy.GetComponent<MovingObject>().isOriginal = false;
-                copy.transform.position += PlayerMovement.instance.transform.forward * transform.localScale.z * (i + 1) * loopOffset;
+                copy.transform.position += Vector3.forward * transform.localScale.z * (i + 1) * loopOffset;
             }
         }
         else if (type == EnvironmentType.Hazard)
